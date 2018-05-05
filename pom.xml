@@ -28,19 +28,41 @@
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
     <java.version>1.8</java.version>
+    <atomix.version>2.1.0-SNAPSHOT</atomix.version>
   </properties>
 
   <dependencies>
     <dependency>
       <groupId>io.atomix</groupId>
       <artifactId>atomix</artifactId>
-      <version>2.1.0-SNAPSHOT</version>
+      <version>${atomix.version}</version>
     </dependency>
 
     <dependency>
       <groupId>io.atomix</groupId>
       <artifactId>atomix-primary-backup</artifactId>
-      <version>2.1.0-SNAPSHOT</version>
+      <version>${atomix.version}</version>
+      <optional>true</optional>
+
+    </dependency>
+
+    <dependency>
+      <groupId>io.atomix</groupId>
+      <artifactId>atomix-raft</artifactId>
+      <version>${atomix.version}</version>
+      <optional>true</optional>
+    </dependency>
+
+    <dependency>
+      <groupId>io.atomix</groupId>
+      <artifactId>atomix-primitive</artifactId>
+      <version>${atomix.version}</version>
+    </dependency>
+
+    <dependency>
+      <groupId>io.atomix</groupId>
+      <artifactId>atomix-utils</artifactId>
+      <version>${atomix.version}</version>
     </dependency>
 
     <dependency>
