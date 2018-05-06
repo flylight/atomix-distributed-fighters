@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Atomix - Distributed Fight!</title>
+
+  <script src="js/jquery-3.3.1.min.js"></script>
+  <script src="js/atomix-fighters.js"></script>
+
+</head>
+<body style="text-align: center;">
+
+<h1>Atomix - Distributed Fighters!</h1>
+
+<table style="margin: 0px auto;">
+
+  <tr>
+    <td>
+    </td>
+    <td>
+    </td>
+    <td>
+      <img src="img/shao.jpg" width="200" height="200"/>
+    </td>
+    <td>
+    </td>
+    <td>
+    </td>
+  </tr>
+  <tr>
+    <td>
+      <div style="border-style: ridge; width: 200px; height: 200px;">
+        <div id="left-fighter-status" style="border-bottom-style: ridge;">
+          Status : -
+        </div>
+        <div id="left-fighter-attacks" style="overflow-y: scroll; height: 180px;">
+
+        </div>
+      </div>
+    </td>
+    <td>
+      <img src="img/subz.png" width="180" height="200"/>
+    </td>
+    <td>
+      <div>
+        <button id="start-check-button" onclick="startStatusCheck();" title="Start" style="width: 150px; height: 30px;">
+          Start status check
+        </button>
+      </div>
+      <div>
+        <button id="start-fight-button" onclick="startFight();" title="Fight"
+                style="width: 150px; height: 30px; display: none">Fight !
+        </button>
+      </div>
+      <div>
+        <button id="reset-fight-button" onclick="resetFight();" title="Restart"
+                style="width: 150px; height: 30px; display: none">Restart
+        </button>
+      </div>
+    </td>
+    <td>
+      <img src="img/scorp.png" width="180" height="200"/>
+    </td>
+    <td>
+      <div style="border-style: ridge; width: 200px; height: 200px;">
+        <div id="right-fighter-status" style="border-bottom-style: ridge;">
+          Status : -
+        </div>
+        <div id="right-fighter-attacks" style="overflow-y: scroll; height: 180px;">
+
+        </div>
+      </div>
+    </td>
+  </tr>
+
+</table>
+
+</body>
+</html>

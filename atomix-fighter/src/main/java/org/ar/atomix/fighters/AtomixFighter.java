@@ -44,7 +44,7 @@ public class AtomixFighter {
         .withAddress(host, port)
         .build();
 
-    Member judgeMember = Member.builder(name)
+    Member judgeMember = Member.builder("Judge")
         .withType(Member.Type.PERSISTENT)
         .withAddress(host, judgePort)
         .build();

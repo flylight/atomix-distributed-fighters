@@ -20,6 +20,7 @@
   <modules>
     <module>atomix-fighter</module>
     <module>atomix-judge</module>
+    <module>atomix-view</module>
   </modules>
 
   <packaging>pom</packaging>

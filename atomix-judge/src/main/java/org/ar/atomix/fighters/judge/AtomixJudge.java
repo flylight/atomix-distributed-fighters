@@ -160,29 +160,30 @@ public class AtomixJudge {
 
     LG.info("Attack map activity : " + event.type());
 
-    if (MapEvent.Type.INSERT.equals(event.type())) {
+    if (MapEvent.Type.INSERT.equals(event.type()) || MapEvent.Type.UPDATE.equals(event.type())) {
 
       String fighterName = event.key();
 
       List<Integer> attackList = event.newValue().value();
 
-      Integer latestAttack = attackList.get(attackList.size() - 1);
+      if (!attackList.isEmpty()) {
+        Integer latestAttack = attackList.get(attackList.size() - 1);
 
-      AsyncConsistentMap<String, Integer> healthMap = node.<String, Integer>getConsistentMap(HEALTH_MAP_VAR_NAME)
-          .async();
+        AsyncConsistentMap<String, Integer> healthMap = node.<String, Integer>getConsistentMap(HEALTH_MAP_VAR_NAME)
+            .async();
 
-      healthMap.keySet()
-          .whenComplete((keys, throwable) -> {
+        healthMap.keySet()
+            .whenComplete((keys, throwable) -> {
 
-            keys.stream().filter(someFighterName -> !someFighterName.equals(fighterName))
-                .forEach(someFighterName -> {
+              keys.stream().filter(someFighterName -> !someFighterName.equals(fighterName))
+                  .forEach(someFighterName -> {
 
-                  healthMap.computeIfPresent(someFighterName, (s, health) -> health - latestAttack);
+                    healthMap.computeIfPresent(someFighterName, (s, health) -> health - latestAttack);
 
-                });
+                  });
 
-          });
-
+            });
+      }
     }
   }
 }
