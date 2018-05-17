@@ -4,6 +4,7 @@ import org.junit.AfterClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.junit4.SpringRunner;
 
@@ -17,16 +18,13 @@ import java.nio.file.attribute.BasicFileAttributes;
 import java.util.Collections;
 import java.util.List;
 
+import io.atomix.core.Atomix;
 import io.atomix.core.map.AsyncConsistentMap;
 import io.atomix.core.set.DistributedSet;
 import io.atomix.utils.time.Versioned;
 
 import static junit.framework.TestCase.assertEquals;
 import static junit.framework.TestCase.assertTrue;
-import static org.ar.atomix.fighters.judge.AtomixJudge.ATTACK_MULTI_MAP_VAR_NAME;
-import static org.ar.atomix.fighters.judge.AtomixJudge.FIGHT_STATE_VAR_NAME;
-import static org.ar.atomix.fighters.judge.AtomixJudge.HEALTH_MAP_VAR_NAME;
-import static org.ar.atomix.fighters.judge.AtomixJudge.REGISTRATION_SET_VAR_NAME;
 import static org.junit.Assert.assertFalse;
 
 @RunWith(SpringRunner.class)
@@ -34,7 +32,19 @@ import static org.junit.Assert.assertFalse;
 public class AtomixJudgeTest {
 
   @Autowired
-  private AtomixJudge judge;
+  private Atomix atomix;
+
+  @Value("${registration.set.name}")
+  private String registrationSetName;
+
+  @Value("${health.map.name}")
+  private String healthMapName;
+
+  @Value("${attack.map.name}")
+  private String attackMapName;
+
+  @Value("${fight.state.val.name}")
+  private String fightStateValueName;
 
   @AfterClass
   public static void deleteData() throws Exception {
@@ -58,23 +68,23 @@ public class AtomixJudgeTest {
 
   @Test
   public void testHealthMaps() {
-    AsyncConsistentMap<String, Integer> attackMap = judge.getNode().<String, Integer>getConsistentMap(HEALTH_MAP_VAR_NAME)
+    AsyncConsistentMap<String, Integer> attackMap = atomix.<String, Integer>getConsistentMap(healthMapName)
         .async();
 
     Versioned<Integer> value = attackMap.put("test", 3344)
-        .thenCompose(objectVersioned -> judge.getNode()
-            .<String, Integer>getConsistentMap(HEALTH_MAP_VAR_NAME).async().get("test")).join();
+        .thenCompose(objectVersioned -> atomix
+            .<String, Integer>getConsistentMap(healthMapName).async().get("test")).join();
 
     assertEquals(Integer.valueOf(3344), value.value());
   }
 
   @Test
   public void testAttackMaps() {
-    AsyncConsistentMap<String, List<Integer>> attackMap = judge.getNode().<String, List<Integer>>getConsistentMap(ATTACK_MULTI_MAP_VAR_NAME)
+    AsyncConsistentMap<String, List<Integer>> attackMap = atomix.<String, List<Integer>>getConsistentMap(attackMapName)
         .async();
 
     Versioned<List<Integer>> result = attackMap.put("test", Collections.singletonList(100))
-        .thenCompose(objectVersioned -> judge.getNode().<String, List<Integer>>getConsistentMap(ATTACK_MULTI_MAP_VAR_NAME)
+        .thenCompose(objectVersioned -> atomix.<String, List<Integer>>getConsistentMap(attackMapName)
             .async()
             .get("test"))
         .join();
@@ -86,7 +96,7 @@ public class AtomixJudgeTest {
 
   @Test
   public void testRegistrationSet() {
-    DistributedSet<String> fightersSet = judge.getNode().getSet(REGISTRATION_SET_VAR_NAME);
+    DistributedSet<String> fightersSet = atomix.getSet(registrationSetName);
 
     Boolean added = fightersSet
         .async()
@@ -95,7 +105,7 @@ public class AtomixJudgeTest {
 
     assertTrue(added);
 
-    fightersSet = judge.getNode().getSet(REGISTRATION_SET_VAR_NAME);
+    fightersSet = atomix.getSet(registrationSetName);
 
     assertFalse(fightersSet.isEmpty());
     assertEquals(1, fightersSet.size());
@@ -105,14 +115,14 @@ public class AtomixJudgeTest {
   @Test
   public void testNewFighterAppearing() throws InterruptedException {
 
-    Boolean isTestFighterPresent = judge.getNode().<String, Integer>getConsistentMap(HEALTH_MAP_VAR_NAME)
+    Boolean isTestFighterPresent = atomix.<String, Integer>getConsistentMap(healthMapName)
         .async()
         .containsKey("TestFighter")
         .join();
 
     assertFalse(isTestFighterPresent);
 
-    Boolean addedNewFighter = judge.getNode().<String>getSet(REGISTRATION_SET_VAR_NAME)
+    Boolean addedNewFighter = atomix.<String>getSet(registrationSetName)
         .async()
         .add("TestFighter")
         .join();
@@ -123,7 +133,7 @@ public class AtomixJudgeTest {
 
     while (!isTestFighterPresent && attempts < 10) {
 
-      isTestFighterPresent = judge.getNode().<String, Integer>getConsistentMap(HEALTH_MAP_VAR_NAME)
+      isTestFighterPresent = atomix.<String, Integer>getConsistentMap(healthMapName)
           .async()
           .containsKey("TestFighter")
           .join();
@@ -132,7 +142,7 @@ public class AtomixJudgeTest {
       Thread.sleep(1000);
     }
 
-    Versioned<Integer> fighterHealth = judge.getNode().<String, Integer>getConsistentMap(HEALTH_MAP_VAR_NAME)
+    Versioned<Integer> fighterHealth = atomix.<String, Integer>getConsistentMap(healthMapName)
         .async()
         .get("TestFighter")
         .join();
@@ -143,36 +153,36 @@ public class AtomixJudgeTest {
   @Test
   public void testFight() throws InterruptedException {
 
-    judge.getNode().<Boolean>getAtomicValue(FIGHT_STATE_VAR_NAME).set(true);
+    atomix.<Boolean>getAtomicValue(fightStateValueName).set(true);
 
-    Boolean fightState = judge.getNode().<Boolean>getAtomicValue(FIGHT_STATE_VAR_NAME).get();
+    Boolean fightState = atomix.<Boolean>getAtomicValue(fightStateValueName).get();
 
     assertTrue(fightState);
 
-    judge.getNode().getConsistentMap(HEALTH_MAP_VAR_NAME)
+    atomix.getConsistentMap(healthMapName)
         .async()
         .put("Fighter1", 100)
         .join();
 
-    Boolean isFighterRegistered = judge.getNode().getConsistentMap(HEALTH_MAP_VAR_NAME)
+    Boolean isFighterRegistered = atomix.getConsistentMap(healthMapName)
         .async()
         .containsKey("Fighter1")
         .join();
 
     assertTrue(isFighterRegistered);
 
-    judge.getNode().getConsistentMap(ATTACK_MULTI_MAP_VAR_NAME)
+    atomix.getConsistentMap(attackMapName)
         .async()
         .put("Fighter2", Collections.singletonList(100))
         .join();
 
-    judge.getNode().<Boolean>getAtomicValue(FIGHT_STATE_VAR_NAME).async().set(true).join();
+    atomix.<Boolean>getAtomicValue(fightStateValueName).async().set(true).join();
 
     int iteration = 0;
 
     while (fightState && iteration < 10) {
 
-      fightState = judge.getNode().<Boolean>getAtomicValue(FIGHT_STATE_VAR_NAME).async().get().join();
+      fightState = atomix.<Boolean>getAtomicValue(fightStateValueName).async().get().join();
 
       iteration++;
 

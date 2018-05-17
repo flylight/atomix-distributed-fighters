@@ -1,6 +1,5 @@
 package org.ar.atomix.fighters.service;
 
-import org.ar.atomix.fighters.AtomixView;
 import org.ar.atomix.fighters.data.Fighter;
 import org.ar.atomix.fighters.data.Status;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -11,6 +10,7 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.Objects;
 
+import io.atomix.core.Atomix;
 import io.atomix.utils.time.Versioned;
 
 @Service
@@ -22,16 +22,16 @@ public class FightService {
   private static final String ATTACK_MAP_VAR_NAME = "attackMap";
 
   @Autowired
-  private AtomixView atomixView;
+  private Atomix atomix;
 
   public Status getStatus() {
 
     ArrayList<Fighter> fighters = new ArrayList<>();
 
-    atomixView.getNode().<String>getSet(REGISTRATION_SET_VAR_NAME).forEach(fighterName -> {
+    atomix.<String>getSet(REGISTRATION_SET_VAR_NAME).forEach(fighterName -> {
 
-      Versioned<Integer> health = atomixView.getNode().<String, Integer>getConsistentMap(HEALTH_MAP_VAR_NAME).get(fighterName);
-      Versioned<List<Integer>> attacks = atomixView.getNode().<String, List<Integer>>getConsistentMap(ATTACK_MAP_VAR_NAME).get(fighterName);
+      Versioned<Integer> health = atomix.<String, Integer>getConsistentMap(HEALTH_MAP_VAR_NAME).get(fighterName);
+      Versioned<List<Integer>> attacks = atomix.<String, List<Integer>>getConsistentMap(ATTACK_MAP_VAR_NAME).get(fighterName);
 
       fighters.add(Fighter.builder()
           .name(fighterName)
@@ -42,7 +42,7 @@ public class FightService {
 
     fighters.sort(Comparator.comparing(Fighter::getName));
 
-    boolean isFighting = atomixView.getNode().<Boolean>getAtomicValue(FIGHT_STATE_VAR_NAME).get();
+    boolean isFighting = atomix.<Boolean>getAtomicValue(FIGHT_STATE_VAR_NAME).get();
 
     return Status.builder()
         .fighters(fighters)
@@ -52,34 +52,34 @@ public class FightService {
 
   public void startFight() {
 
-    atomixView.getNode().<Boolean>getAtomicValue(FIGHT_STATE_VAR_NAME)
+    atomix.<Boolean>getAtomicValue(FIGHT_STATE_VAR_NAME)
         .async()
         .set(true);
   }
 
   public void restartFight() {
-    atomixView.getNode().<Boolean>getAtomicValue(FIGHT_STATE_VAR_NAME)
+    atomix.<Boolean>getAtomicValue(FIGHT_STATE_VAR_NAME)
         .async()
         .set(false);
 
-    atomixView.getNode().<String, List<Integer>>getConsistentMap(ATTACK_MAP_VAR_NAME)
+    atomix.<String, List<Integer>>getConsistentMap(ATTACK_MAP_VAR_NAME)
         .async()
         .keySet().whenComplete((fighters, throwable) -> {
 
       fighters.forEach(fighter -> {
-        atomixView.getNode().<String, List<Integer>>getConsistentMap(ATTACK_MAP_VAR_NAME)
+        atomix.<String, List<Integer>>getConsistentMap(ATTACK_MAP_VAR_NAME)
             .async()
             .put(fighter, new ArrayList<>());
       });
     });
 
-    atomixView.getNode().<String, Integer>getConsistentMap(HEALTH_MAP_VAR_NAME)
+    atomix.<String, Integer>getConsistentMap(HEALTH_MAP_VAR_NAME)
         .async()
         .keySet().whenComplete((fighters, throwable) -> {
 
 
       fighters.forEach(fighter -> {
-        atomixView.getNode().<String, Integer>getConsistentMap(HEALTH_MAP_VAR_NAME)
+        atomix.<String, Integer>getConsistentMap(HEALTH_MAP_VAR_NAME)
             .async()
             .put(fighter, 100);
       });
