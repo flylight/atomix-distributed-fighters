@@ -40,7 +40,7 @@ public class FightService {
           .build());
     });
 
-    fighters.sort(Comparator.comparing(Fighter::getName));
+    //fighters.sort(Comparator.comparing(Fighter::getName));
 
     boolean isFighting = atomix.<Boolean>getAtomicValue(FIGHT_STATE_VAR_NAME).get();
 

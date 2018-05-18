@@ -14,6 +14,7 @@ public class InstanceConfiguration {
   public Member localMember(@Value("${atomix.fighter.host}") String host,
                             @Value("${atomix.fighter.port}") int port,
                             @Value("${atomix.fighter.name}") String name) {
+
     return Member.builder(name)
         .withType(Member.Type.EPHEMERAL)
         .withAddress(host, port)
@@ -31,6 +32,7 @@ public class InstanceConfiguration {
 
   @Bean
   public Atomix atomix(Member localMember, Member clusterMember) {
+
     Atomix atomix = Atomix.builder()
         .withClusterName("Distributed-Fighters")
         .withLocalMember(localMember)

@@ -73,7 +73,7 @@ function updateUIAccordingToStatus(status) {
 
 function updateFighterStatus(fighterPrefix, fighterData) {
 
-    var statusList = resolveStatusLine(fighterData)
+    var statusList = resolveStatusLine(fighterData);
 
         $("#" + fighterPrefix + "-fighter-status").html(statusList);
 
@@ -95,8 +95,10 @@ function updateFighterStatus(fighterPrefix, fighterData) {
 
 function resolveStatusLine(fighterData) {
 
-    return "Status: " + (fighterData.health <= 0 ? "LOST" : "OK") + " (" + fighterData.name + " - " + retrieveHealthColor(
-        fighterData.health) + ")";
+    return "Status: "
+           + (fighterData.health <= 0 ? "LOST" : "OK")
+           + " (" + fighterData.name + " | "
+           + retrieveHealthColor(fighterData.health) + ")";
 }
 
 function retrieveAttackColor(attack) {
@@ -114,16 +116,20 @@ function retrieveHealthColor(health) {
 
     if (health < 20) {
 
-        return "<span style=\"color:red;font-weight:bold;\">" + health + "</span>"
+        return "<span style=\"color:red;font-weight:bold;\">" + resolveHealthPoints(health) + "</span>"
 
     } else if (health < 50) {
 
-        return "<span style=\"color:darkorange;font-weight:bold;\">" + health + "</span>"
+        return "<span style=\"color:darkorange;font-weight:bold;\">" + resolveHealthPoints(health) + "</span>"
 
     } else if (health < 75) {
 
-        return "<span style=\"color:saddlebrown;font-weight:bold;\">" + health + "</span>"
+        return "<span style=\"color:saddlebrown;font-weight:bold;\">" + resolveHealthPoints(health) + "</span>"
     }
 
-    return "<span style=\"color:black;font-weight:bold;\">" + health + "</span>";
+    return "<span style=\"color:black;font-weight:bold;\">" + resolveHealthPoints(health) + "</span>";
+}
+
+function resolveHealthPoints(health) {
+    return health < 0 ? 0 : health;
 }
