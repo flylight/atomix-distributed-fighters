@@ -6,7 +6,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
-import java.util.Comparator;
 import java.util.List;
 import java.util.Objects;
 
@@ -39,8 +38,6 @@ public class FightService {
           .attacks(Objects.nonNull(attacks) ? attacks.value() : null)
           .build());
     });
-
-    //fighters.sort(Comparator.comparing(Fighter::getName));
 
     boolean isFighting = atomix.<Boolean>getAtomicValue(FIGHT_STATE_VAR_NAME).get();
 
