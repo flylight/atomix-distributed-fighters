@@ -11,4 +11,4 @@ https://www.youtube.com/watch?v=qJ4DOuLLryc
 
 ## Video from conferences :
 1) JeeConf : https://youtu.be/jTKUSxEhijY
-2) Rockstar Night : https://www.youtube.com/watch?v=lOBf559mx1c
+2) Rockstar Night : https://youtu.be/lOBf559mx1c
